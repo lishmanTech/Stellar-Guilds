@@ -40,6 +40,22 @@ export class BountyService {
     return bounty;
   }
 
+  async findAll(page = 0, size = 20, guildId?: string) {
+    const where: any = { status: 'OPEN' };
+    if (guildId) where.guildId = guildId;
+
+    const [items, total] = await Promise.all([
+      this.prisma.bounty.findMany({ 
+        where, 
+        skip: page * size, 
+        take: size,
+        orderBy: { createdAt: 'desc' }
+      }),
+      this.prisma.bounty.count({ where }),
+    ]);
+    return { items, total, page, size };
+  }
+
   async search(q?: string, page = 0, size = 20, guildId?: string) {
     const text = q
       ? {
